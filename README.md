@@ -47,7 +47,7 @@ Real-World Friction Simulation: Configures initial capital, strict commission ra
 Prerequisites
 
 # Clone the repository
-git clone [https://github.com/YourUsername/CB-DualLow-Momentum-Strategy.git](https://github.com/YourUsername/CB-DualLow-Momentum-Strategy.git)
+git clone [https://github.com/George-niu/CB-DualLow-Momentum-Strategy.git](https://github.com/George-niu/CB-DualLow-Momentum-Strategy.git)
 cd CB-DualLow-Momentum-Strategy
 
 # Install dependencies
