@@ -1,10 +1,10 @@
-Convertible Bond Dual-Low & Momentum Rotational Strategy 📈
+Convertible Bond Dual-Low & Momentum Backtesting Engine 📈
 
 📖 Project Overview
 
-This project implements a systematic quantitative trading framework targeting the China A-Share Convertible Bond (CB) Market. It combines a rigorous historical backtesting engine with a real-time daily signal generation radar ("Semi-Auto Trading").
+This project implements an enterprise-level quantitative backtesting framework targeting the China A-Share Convertible Bond (CB) Market. It is designed to strictly evaluate the performance of a "Dual-Low" (Price + Premium Rate) rotational strategy, augmented by a Cross-Sectional Momentum Filter (20-Day MA) to control maximum drawdowns and avoid value traps.
 
-The core strategy is built upon the classic "Dual-Low" (Price + Premium Rate) factor, augmented by a Cross-Sectional Momentum Filter (20-Day MA) to strictly control maximum drawdowns and avoid value traps (e.g., defaulted or persistently declining bonds).
+The repository is modularized into two core components: a high-concurrency data acquisition module (data_loader.py) and an event-driven backtesting engine (backtest_engine.py).
 
 🧠 Core Strategy Logic
 
@@ -18,39 +18,53 @@ Dynamic Rotation:
 
 Rebalances the portfolio periodically (e.g., every 20 trading days) to capture the top 5 ranking CBs, ensuring capital efficiency and continuous exposure to the most optimal risk-reward profiles.
 
-🛠️ Engineering Highlights & Tech Stack
+🏗️ System Architecture & File Structure
 
-Beyond the financial logic, this project is engineered with performance and robustness in mind (Quant Developer mindset):
+This framework separates data engineering from financial logic to ensure scalability and performance (Quant Developer mindset).
 
-Event-Driven Backtesting: Built on the Backtrader framework, fully simulating real-world transaction friction (commissions, slippage, and capital limits).
+1. data_loader.py: Asynchronous Data Lake Construction
 
-High-Performance Data Lake: Engineered an automated local data caching system.
+Data fetching in quantitative research is often the biggest bottleneck. This module handles data engineering with high efficiency:
 
-Multi-Threading Concurrency: Utilized concurrent.futures.ThreadPoolExecutor to fetch and process historical daily bars for 500+ active convertible bonds simultaneously, reducing data preparation time by over 90%.
+Multi-Threading Concurrency: Utilizes concurrent.futures.ThreadPoolExecutor to fetch historical daily bars for 500+ active convertible bonds simultaneously via akshare. This reduces data preparation time by over 90%.
 
-Live Daily Radar (Webhook Integration): Includes a standalone lightweight script (daily_radar.py) for live market deployment. It calculates real-time Dual-Low scores post-market and automatically pushes the target trading list via DingTalk/WeChat Webhooks.
+Data Cleaning & Caching: Automatically formats date indices, extracts essential OHLCV data, and caches them locally as CSV files in a data/ directory. This creates a local "Data Lake" to speed up subsequent backtest iterations.
+
+Fault Tolerance: Implements strict try...except blocks to handle network timeouts and seamlessly ignore newly listed bonds with insufficient historical data.
+
+2. backtest_engine.py: Event-Driven Strategy Engine
+
+The core execution environment built on top of the Backtrader framework:
+
+Automated Data Injection: Iterates through the local Data Lake, loads time-series data using Pandas, and aligns data lengths (e.g., trimming to the last 500 trading days) before feeding it into the Cerebro engine.
+
+Custom Strategy Class: Implements the DoubleLowMomentumRotation strategy. It calculates the MA20 indicators, ranks the cross-sectional data, and executes portfolio rebalancing every $N$ days.
+
+Real-World Friction Simulation: Configures initial capital, strict commission rates (e.g., 0.02%), and handles realistic order executions to prevent overfitting and "liquidity illusions".
 
 🚀 Quick Start
 
-1. Run the Historical Backtest
+Prerequisites
 
 # Clone the repository
 git clone [https://github.com/YourUsername/CB-DualLow-Momentum-Strategy.git](https://github.com/YourUsername/CB-DualLow-Momentum-Strategy.git)
 cd CB-DualLow-Momentum-Strategy
 
 # Install dependencies
-pip install -r requirements.txt
+pip install pandas akshare backtrader tqdm
 
-# Execute the backtest engine (automatically downloads data if first run)
+
+Execution
+
+Step 1: Build the Data Lake
+Run the data loader to fetch the latest market data and build your local CSV cache.
+
+python data_loader.py
+
+Step 2: Run the Backtest
+Once the data is cached, execute the engine to simulate the strategy performance.
+
 python backtest_engine.py
-
-
-2. Run the Daily Live Radar (After Market Closes)
-
-python daily_radar.py
-
-Note: Make sure to configure your own Webhook URL in daily_radar.py to receive mobile notifications.
-
 
 
 📝 Disclaimer
